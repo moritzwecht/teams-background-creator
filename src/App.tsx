@@ -91,12 +91,12 @@ function App() {
         // Draw Name
         ctx.font = 'bold 50px "Noto Serif", serif';
         const name = `${firstName.trim()} ${lastName.trim()}`.trim() || 'Dein Name';
-        ctx.fillText(name, 80, 100);
+        ctx.fillText(name, 80, 200);
 
         // Draw Profession
         ctx.font = '30px "Noto Sans", sans-serif';
         const prof = profession.trim() || 'Dein Beruf';
-        ctx.fillText(prof, 80, 150);
+        ctx.fillText(prof, 80, 250);
       });
     };
   };
