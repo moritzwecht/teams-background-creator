@@ -96,8 +96,7 @@ function App() {
     <div className="app-container">
       <aside className="sidebar">
         <div>
-          <h1>Teams Backgrounds</h1>
-          <p className="info-text">Erstelle deinen personalisierten Hintergrund</p>
+          <h1>Teams Background</h1>
         </div>
 
         <div className="input-group">
@@ -134,7 +133,6 @@ function App() {
         </div>
 
         <div className="background-selection">
-          <label>Wähle einen Hintergrund oder lade einen hoch</label>
           <div className="background-grid">
             {RESOLVED_BACKGROUNDS.map((bg) => (
               <div
@@ -179,9 +177,6 @@ function App() {
             width={1920}
             height={1080}
           />
-        </div>
-        <div className="info-text">
-          <p>Tipp: Die Vorschau ist im Format 1920x1080 optimiert für Microsoft Teams.</p>
         </div>
       </main>
     </div>
