@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Upload, Image as ImageIcon } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import './index.css';
 
 const RESOLVED_BACKGROUNDS = [
