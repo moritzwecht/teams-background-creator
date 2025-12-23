@@ -27,7 +27,7 @@ function App() {
     drawCanvas();
   }, [firstName, lastName, profession, selectedBgUrl, customBgUrl]);
 
-  const drawCanvas = () => {
+  const drawCanvas = (isDownload = false) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -60,7 +60,7 @@ function App() {
 
       // Analyze background brightness in the text area
       const textAreaX = 80;
-      const textAreaY = 50;
+      const textAreaY = 150; // Adjusted based on new text positions
       const textAreaWidth = 600;
       const textAreaHeight = 150;
 
@@ -82,6 +82,16 @@ function App() {
 
       // Ensure fonts are loaded before drawing text
       document.fonts.ready.then(() => {
+        const trimmedFirstName = firstName.trim();
+        const trimmedLastName = lastName.trim();
+        const trimmedProf = profession.trim();
+
+        const hasName = trimmedFirstName || trimmedLastName;
+        const hasProf = trimmedProf;
+
+        // Skip drawing if download mode and no text provided
+        if (isDownload && !hasName && !hasProf) return;
+
         // Text settings
         ctx.fillStyle = isDark ? 'white' : '#1e293b';
         ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.3)';
@@ -89,14 +99,24 @@ function App() {
         ctx.textAlign = 'left';
 
         // Draw Name
-        ctx.font = 'bold 50px "Noto Serif", serif';
-        const name = `${firstName.trim()} ${lastName.trim()}`.trim() || 'Dein Name';
-        ctx.fillText(name, 80, 200);
+        if (hasName || !isDownload) {
+          ctx.save();
+          if (!hasName) ctx.globalAlpha = 0.3; // Grayed out placeholder
+          ctx.font = 'bold 50px "Noto Serif", serif';
+          const name = (hasName ? `${trimmedFirstName} ${trimmedLastName}`.trim() : '- Vollständiger Name -');
+          ctx.fillText(name, 80, 200);
+          ctx.restore();
+        }
 
         // Draw Profession
-        ctx.font = '30px "Noto Sans", sans-serif';
-        const prof = profession.trim() || 'Dein Beruf';
-        ctx.fillText(prof, 80, 250);
+        if (hasProf || !isDownload) {
+          ctx.save();
+          if (!hasProf) ctx.globalAlpha = 0.3; // Grayed out placeholder
+          ctx.font = '30px "Noto Sans", sans-serif';
+          const prof = (hasProf ? trimmedProf : '- Beruf -');
+          ctx.fillText(prof, 80, 250);
+          ctx.restore();
+        }
       });
     };
   };
@@ -118,10 +138,20 @@ function App() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const link = document.createElement('a');
-    link.download = `Teams-Background-${firstName}-${lastName}.png`.replace(/\s+/g, '-');
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    // Redraw for download (pure background if empty)
+    drawCanvas(true);
+
+    // Short delay to allow redraw to finish (since it's async via Fonts API)
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.download = `Teams-Background-${firstName}-${lastName}`.replace(/\s+/g, '-').replace(/-+$/, '') || 'Teams-Background';
+      link.download += '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      // Restore preview state
+      drawCanvas(false);
+    }, 100);
   };
 
   const toggleTheme = () => {
