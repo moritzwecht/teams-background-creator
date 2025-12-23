@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Sun, Moon } from 'lucide-react';
 import './index.css';
 
 const RESOLVED_BACKGROUNDS = [
@@ -14,8 +14,13 @@ function App() {
   const [profession, setProfession] = useState('');
   const [selectedBgUrl, setSelectedBgUrl] = useState(RESOLVED_BACKGROUNDS[0].url);
   const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    document.body.className = theme === 'light' ? 'light-mode' : '';
+  }, [theme]);
 
   useEffect(() => {
     drawCanvas();
@@ -52,21 +57,46 @@ function App() {
 
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 
-      // Text settings
-      ctx.fillStyle = 'white';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 10;
-      ctx.textAlign = 'left';
+      // Analyze background brightness in the text area
+      const textAreaX = 80;
+      const textAreaY = 50;
+      const textAreaWidth = 600;
+      const textAreaHeight = 150;
 
-      // Draw Name
-      ctx.font = 'bold 50px Inter, sans-serif';
-      const name = `${firstName} ${lastName}`.trim() || 'Dein Name';
-      ctx.fillText(name, 80, 100);
+      let isDark = true;
+      try {
+        const imageData = ctx.getImageData(textAreaX, textAreaY, textAreaWidth, textAreaHeight);
+        const data = imageData.data;
+        let brightness = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          // Standard luminance formula
+          brightness += (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+        }
+        const avgBrightness = brightness / (data.length / 4);
+        isDark = avgBrightness < 128; // Threshold (0-255)
+      } catch (e) {
+        // Fallback if getImageData fails (e.g. CORS)
+        console.warn('Could not analyze brightness, falling back to white text', e);
+      }
 
-      // Draw Profession
-      ctx.font = '30px Inter, sans-serif';
-      const prof = profession.trim() || 'Dein Beruf';
-      ctx.fillText(prof, 80, 150);
+      // Ensure fonts are loaded before drawing text
+      document.fonts.ready.then(() => {
+        // Text settings
+        ctx.fillStyle = isDark ? 'white' : '#1e293b';
+        ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.3)';
+        ctx.shadowBlur = isDark ? 10 : 2;
+        ctx.textAlign = 'left';
+
+        // Draw Name
+        ctx.font = 'bold 50px "Noto Serif", serif';
+        const name = `${firstName} ${lastName}`.trim() || '[Dein Name]';
+        ctx.fillText(name, 80, 100);
+
+        // Draw Profession
+        ctx.font = '30px "Noto Sans", sans-serif';
+        const prof = profession.trim() || '[Dein Beruf]';
+        ctx.fillText(prof, 80, 150);
+      });
     };
   };
 
@@ -77,6 +107,7 @@ function App() {
       reader.onload = (event) => {
         const url = event.target?.result as string;
         setCustomBgUrl(url);
+        setSelectedBgUrl(''); // Deselect preset if custom is uploaded
       };
       reader.readAsDataURL(file);
     }
@@ -92,11 +123,18 @@ function App() {
     link.click();
   };
 
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
   return (
     <div className="app-container">
       <aside className="sidebar">
-        <div>
+        <div className="header-row">
           <h1>Teams Background</h1>
+          <button className="theme-toggle" onClick={toggleTheme}>
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
         </div>
 
         <div className="input-group">
@@ -146,6 +184,13 @@ function App() {
                 <img src={bg.url} alt={bg.name} title={bg.name} />
               </div>
             ))}
+            <div
+              className={`background-item upload-area ${customBgUrl ? 'active' : ''}`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="icon" size={20} />
+              <span>Bild hochladen</span>
+            </div>
           </div>
 
           <input
@@ -155,19 +200,7 @@ function App() {
             ref={fileInputRef}
             onChange={handleFileUpload}
           />
-          <div
-            className={`upload-area ${customBgUrl ? 'active' : ''}`}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="icon" size={24} />
-            <span>Eigenes Bild hochladen</span>
-          </div>
         </div>
-
-        <button className="download-btn" onClick={handleDownload}>
-          <Download size={20} />
-          Hintergrund herunterladen
-        </button>
       </aside>
 
       <main className="main-content">
@@ -178,6 +211,11 @@ function App() {
             height={1080}
           />
         </div>
+
+        <button className="download-btn" onClick={handleDownload}>
+          <Download size={20} />
+          Hintergrund herunterladen
+        </button>
       </main>
     </div>
   );
