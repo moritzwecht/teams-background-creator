@@ -3,9 +3,10 @@ import { Download, Upload, Sun, Moon } from 'lucide-react';
 import './index.css';
 
 const RESOLVED_BACKGROUNDS = [
-  { id: 'abstract', url: '/backgrounds/modern_abstract_background_1766484707661.png', name: 'Modern Abstract' },
-  { id: 'office', url: '/backgrounds/professional_office_background_1766484723087.png', name: 'Professional Office' },
-  { id: 'gradient', url: '/backgrounds/minimalist_gradient_background_v2_1766484735796.png', name: 'Minimalist Gradient' }
+  { id: 'bg-dark', url: '/backgrounds/bg-dark.jpg', name: 'Hintergrund Grau Dunkel' },
+  { id: 'bg-light', url: '/backgrounds/bg-hell.jpg', name: 'Hintergrund Grau Hell' },
+  { id: 'bg-birds', url: '/backgrounds/bg-voegel.jpg', name: 'Hintergrund Vögel' },
+  { id: 'bg-vzp', url: '/backgrounds/bg-vzp.jpg', name: 'Hintergrund VZP' },
 ];
 
 function App() {
@@ -89,12 +90,12 @@ function App() {
 
         // Draw Name
         ctx.font = 'bold 50px "Noto Serif", serif';
-        const name = `${firstName} ${lastName}`.trim() || '[Dein Name]';
+        const name = `${firstName.trim()} ${lastName.trim()}`.trim() || 'Dein Name';
         ctx.fillText(name, 80, 100);
 
         // Draw Profession
         ctx.font = '30px "Noto Sans", sans-serif';
-        const prof = profession.trim() || '[Dein Beruf]';
+        const prof = profession.trim() || 'Dein Beruf';
         ctx.fillText(prof, 80, 150);
       });
     };
